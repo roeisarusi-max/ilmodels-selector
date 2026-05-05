@@ -12,55 +12,12 @@ from urllib.parse import urljoin, urlparse
 
 import requests as req
 from bs4 import BeautifulSoup
-from flask import Flask, jsonify, render_template_string, request as flask_request, session, redirect, url_for
+from flask import Flask, jsonify, render_template_string, request as flask_request
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "ilmodels-secret-2024")
-
-# סיסמא — ניתן לשנות בהגדרות Railway
-APP_PASSWORD = os.environ.get("APP_PASSWORD", "ilmodels2024")
-
-LOGIN_HTML = """<!DOCTYPE html>
-<html dir="rtl" lang="he">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILModels – כניסה</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Arial,sans-serif;background:#111;min-height:100vh;
-       display:flex;align-items:center;justify-content:center}
-  .box{background:#1a1a1a;border-radius:20px;padding:40px;width:min(360px,92vw);text-align:center}
-  h1{color:#fff;font-size:1.4rem;margin-bottom:6px}
-  p{color:#888;font-size:.85rem;margin-bottom:28px}
-  input{width:100%;padding:13px 16px;border:1px solid #333;border-radius:10px;
-        background:#222;color:#fff;font-size:1rem;margin-bottom:14px;direction:rtl;outline:none}
-  input:focus{border-color:#25D366}
-  button{width:100%;padding:13px;background:#25D366;color:#fff;border:none;
-         border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer}
-  button:hover{background:#1fbb57}
-  .err{color:#e57373;font-size:.85rem;margin-bottom:12px}
-</style>
-</head>
-<body>
-<div class="box">
-  <h1>🎯 ILModels</h1>
-  <p>בוחר דוגמניות</p>
-  {% if error %}<div class="err">❌ סיסמא שגויה</div>{% endif %}
-  <form method="post">
-    <input type="password" name="password" placeholder="🔒 סיסמא" autofocus>
-    <button type="submit">כניסה</button>
-  </form>
-</div>
-</body>
-</html>"""
-
-
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not session.get("logged_in"):
-            return redirect(url_for("login"))
         return f(*args, **kwargs)
     return decorated
 
@@ -886,23 +843,6 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); 
 # ─────────────────────────────────────────────
 # Flask routes
 # ─────────────────────────────────────────────
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    error = False
-    if flask_request.method == "POST":
-        if flask_request.form.get("password") == APP_PASSWORD:
-            session["logged_in"] = True
-            return redirect(url_for("index"))
-        error = True
-    return render_template_string(LOGIN_HTML, error=error)
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
-
 
 @app.route("/")
 @login_required
